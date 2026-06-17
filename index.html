@@ -77,7 +77,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:#f5f6f
 'use strict';
 const {useState,useEffect,useMemo,useRef}=React;
 const ce=React.createElement;
-const VERSION='8.2';
+const VERSION='8.4';
 const MN=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
 /* ── HARDCODED DATA ──────────────────────────────────────────────── */
@@ -571,7 +571,18 @@ function RetailEngineTab(){
   var chartRef1=useRef(null);
   var chartRef2=useRef(null);
 
-  /* ── Aggregates ── */
+  /* ── Static Qm fallback defaults by segment ── */
+  var STATIC_QM={
+    'CT 75-110cc':1.40,'CT 110-125cc':1.40,
+    'Platina 75-110cc':1.30,'Freedom 110-125cc':1.25,
+    'Pulsar 110-125cc':1.05,'Pulsar 125-150cc':1.00,
+    'Pulsar 150-200cc':0.95,'Pulsar 200-250cc':0.90,
+    'Pulsar 350-500cc':0.80,'Dominar 200-250cc':0.85,
+    'Dominar 350-500cc':0.78,'Avenger 150-200cc':0.90,
+    'Avenger 200-250cc':0.82,'Chetak EV':1.45,
+  };
+
+  /* ── Aggregates (unchanged) ── */
   var vhnAgg=useMemo(function(){
     var o={};
     VHN_ROWS.forEach(function(r){if(!o[r.state])o[r.state]={};o[r.state][r.month]=(o[r.state][r.month]||0)+r.retails;});
@@ -594,11 +605,30 @@ function RetailEngineTab(){
     return o;
   },[]);
 
+  /* total organic leads across all models per month — StateAffinity denominator */
+  var orgTotalByMo=useMemo(function(){
+    var o={};
+    Object.keys(orgAgg).forEach(function(mo){
+      o[mo]=Object.values(orgAgg[mo]).reduce(function(s,v){return s+v;},0);
+    });
+    return o;
+  },[orgAgg]);
+
+  /* ── OEM Statewise Wholesale aggregates (for supply signal) ── */
+  var oemSwAgg=useMemo(function(){
+    var o={};
+    OEM_SW.forEach(function(r){if(!o[r.st])o[r.st]={};o[r.st][r.q]=(o[r.st][r.q]||0)+r.v;});
+    return o;
+  },[]);
+
+  var oemSwQTot=useMemo(function(){
+    var o={};OEM_SW.forEach(function(r){o[r.q]=(o[r.q]||0)+r.v;});return o;
+  },[]);
+
   var allStates=useMemo(function(){return Object.keys(vhnAgg).filter(function(s){return s!=='__ALL__';}).sort();},[vhnAgg]);
   var allModels=useMemo(function(){return Object.keys(wsAgg).sort();},[wsAgg]);
 
   var commonMonths=useMemo(function(){
-    /* Use all Vaahan months — WS fallback handles months beyond last WS month */
     var vMos=new Set();VHN_ROWS.forEach(function(r){if(r.month)vMos.add(r.month);});
     return Array.from(vMos).filter(function(m){return moKey(m)>0;}).sort(function(a,b){return moKey(b)-moKey(a);});
   },[]);
@@ -621,64 +651,189 @@ function RetailEngineTab(){
 
   var mosSorted=useMemo(function(){return commonMonths.slice().sort(function(a,b){return moKey(a)-moKey(b);});},[commonMonths]);
 
-  function predictCell(st,model,mo){
-    var stateRetail=(vhnAgg[st]||{})[mo]||0;
+  /* ── Step 1: Wholesale share with fallback to most recent WS month (UNCHANGED) ── */
+  function getWholesaleShare(model,mo){
     var modelWS=(wsAgg[model]||{})[mo]||0;
     var totalWS=moTotalWS[mo]||0;
-    /* Fallback: if no WS for this month, use most recent month that has WS data */
     if(!totalWS){
-      var moIdx0=mosSorted.indexOf(mo);
-      for(var fi=moIdx0-1;fi>=0;fi--){
+      var idx=mosSorted.indexOf(mo);
+      for(var fi=idx-1;fi>=0;fi--){
         var fm=mosSorted[fi];
         if(moTotalWS[fm]>0){modelWS=(wsAgg[model]||{})[fm]||0;totalWS=moTotalWS[fm];break;}
       }
     }
-    var base=stateRetail*(modelWS/(totalWS||1));
-    if(!base)return 0;
-    var moIdx=mosSorted.indexOf(mo);
-    /* 6-month window for state momentum; 3-month for faster-moving signals */
-    var prev6=moIdx>=6?mosSorted.slice(moIdx-6,moIdx):mosSorted.slice(0,Math.max(0,moIdx));
-    var prev3=moIdx>=3?mosSorted.slice(moIdx-3,moIdx):mosSorted.slice(0,Math.max(0,moIdx));
-    /* Signal 1 — State Momentum [40%]: 6-month avg smooths spike sensitivity */
-    var avgSR=prev6.length?prev6.reduce(function(s,m){return s+((vhnAgg[st]||{})[m]||0);},0)/prev6.length:stateRetail;
-    var stateSig=clamp01(avgSR>0?(stateRetail/avgSR-0.5)/1.5:0.5);
-    /* Signal 2 — Organic Demand [30%]: neutral 0.5 when no lead history */
-    var genNow=(orgAgg[mo]||{})[model]||0;
-    var avgGen=prev3.length?prev3.reduce(function(s,m){return s+((orgAgg[m]||{})[model]||0);},0)/prev3.length:genNow;
-    var orgSig=avgGen>0?clamp01((genNow/avgGen-0.5)/1.5):0.5;
-    /* Signal 3 — WS Share trend [20%]: share vs avg-share (decoupled from volume) */
-    var curShare=modelWS/totalWS;
-    var avgShare=prev3.length?prev3.reduce(function(s,m){var tw=moTotalWS[m]||1;return s+((wsAgg[model]||{})[m]||0)/tw;},0)/prev3.length:curShare;
-    var wsSig=clamp01(avgShare>0?(curShare/avgShare-0.5)/1.5:0.5);
-    /* Signal 4 — Seasonality [10%] */
-    var moNum=MN.indexOf(mo.split("'")[0]);
-    var sameHist=mosSorted.filter(function(m){return MN.indexOf(m.split("'")[0])===moNum&&m!==mo;});
-    var avgSame=sameHist.length?sameHist.reduce(function(s,m){return s+((vhnAgg[st]||{})[m]||0);},0)/sameHist.length:stateRetail;
-    var ovAvg=mosSorted.reduce(function(s,m){return s+((vhnAgg[st]||{})[m]||0);},0)/Math.max(mosSorted.length,1);
-    var seasSig=clamp01(ovAvg>0?(avgSame/ovAvg-0.6)/1.2:0.5);
-    var combined=0.40*stateSig+0.30*orgSig+0.20*wsSig+0.10*seasSig;
-    /* Discount: floor raised 0.88→0.93 (+5%), ceiling 0.97→1.00 — ~5% variance reduction */
-    return Math.max(0,Math.round(base*(0.93+combined*0.07)));
+    return totalWS>0?modelWS/totalWS:0;
   }
+
+  /* ── Step 2: State-aware lead affinity + acceleration ── */
+  function getStateLeadAffinity(model,mo,moIdx){
+    var genNow=(orgAgg[mo]||{})[model]||0;
+    var moTotal=orgTotalByMo[mo]||0;
+    /* StateAffinity: this model's share of total pan-India organic leads this month */
+    var stateAffinity=moTotal>0?clamp01(genNow/moTotal):1/Math.max(allModels.length,1);
+    /* LeadAcceleration: leads vs 3-month rolling avg */
+    var prev3=moIdx>=3?mosSorted.slice(moIdx-3,moIdx):mosSorted.slice(0,Math.max(0,moIdx));
+    var avgGen=prev3.length?prev3.reduce(function(s,m){return s+((orgAgg[m]||{})[model]||0);},0)/prev3.length:genNow;
+    var leadAccel=avgGen>0?clamp01((genNow/avgGen-0.5)/1.5):0.5;
+    /* Fallback: no lead data at all → neutral 0.5 */
+    if(!moTotal&&!genNow)return 0.5;
+    return clamp01(0.6*stateAffinity+0.4*leadAccel);
+  }
+
+  /* ── Step 3: Model-sensitive supply (Change 1) ── */
+  function moToQuarter(mo){
+    var p=mo.match(/^(\w+)'(\d+)$/);if(!p)return null;
+    var mn=MN.indexOf(p[0]);var yy=p[1];if(mn<0)return null;
+    if(mn<=2)return"Jan-Mar'"+yy;
+    if(mn<=5)return"Apr-Jun'"+yy;
+    if(mn<=8)return"Jul-Sep'"+yy;
+    return"Oct-Dec'"+yy;
+  }
+
+  /* ── Step 4: Hybrid model-state momentum ── */
+  function getMomentum(model,st,mo,moIdx,prevPreds){
+    var stateRetail=(vhnAgg[st]||{})[mo]||0;
+    /* StateGrowth: current vs 6-month rolling state average */
+    var prev6=moIdx>=6?mosSorted.slice(moIdx-6,moIdx):mosSorted.slice(0,Math.max(0,moIdx));
+    var avgSR=prev6.length?prev6.reduce(function(s,m){return s+((vhnAgg[st]||{})[m]||0);},0)/prev6.length:stateRetail;
+    var stateGrowth=clamp01(avgSR>0?(stateRetail/avgSR-0.5)/1.5:0.5);
+    /* ModelShareLag: this model's share of prev-month's state retail */
+    var prevMo=moIdx>0?mosSorted[moIdx-1]:null;
+    var prevVhn=prevMo?((vhnAgg[st]||{})[prevMo]||0):0;
+    var prevPred=prevPreds&&prevMo?(prevPreds[model]||0):0;
+    if(prevVhn>0&&prevPred>0){
+      var modelShareLag=clamp01(prevPred/prevVhn);
+      return clamp01(0.6*modelShareLag+0.4*stateGrowth);
+    }
+    /* Fallback: use Wm-weighted state growth when no prior prediction */
+    return stateGrowth;
+  }
+
+  /* ── Precompute fleet conversion ratio per month (needed for dynamic Qm) ── */
+  var fleetConvByMo=useMemo(function(){
+    var o={};
+    mosSorted.forEach(function(mo,moIdx){
+      var prev6=moIdx>=6?mosSorted.slice(moIdx-6,moIdx):mosSorted.slice(0,moIdx);
+      if(prev6.length<3){o[mo]=null;return;}
+      var totalR=0,totalO=0;
+      allModels.forEach(function(model){
+        prev6.forEach(function(m){
+          var wm=getWholesaleShare(model,m);
+          totalR+=((vhnAgg['__ALL__']||{})[m]||0)*wm;
+          totalO+=(orgAgg[m]||{})[model]||0;
+        });
+      });
+      o[mo]=totalO>0?totalR/totalO:null;
+    });
+    return o;
+  },[mosSorted,allModels,wsAgg,moTotalWS,vhnAgg,orgAgg]);
+
+  /* ── Dynamic lead quality Qm (Change 3) — falls back to static if <3 months history ── */
+  function getLeadQuality(model,mo,moIdx){
+    var staticQm=STATIC_QM[model]||1.0;
+    var prev6=moIdx>=6?mosSorted.slice(moIdx-6,moIdx):mosSorted.slice(0,moIdx);
+    if(prev6.length<3)return staticQm;
+    var fleetConv=fleetConvByMo[mo];
+    if(!fleetConv)return staticQm;
+    var totalR=0,totalO=0;
+    prev6.forEach(function(m){
+      totalR+=((vhnAgg['__ALL__']||{})[m]||0)*getWholesaleShare(model,m);
+      totalO+=(orgAgg[m]||{})[model]||0;
+    });
+    if(totalO<1)return staticQm;
+    return Math.max(0.4,Math.min(2.0,staticQm*(totalR/totalO)/fleetConv));
+  }
+
+  /* ── Core: predict all models for one (state, month) — guarantees Σ = VAHAN(s,t) ── */
+  /* prevPreds: {model:value} from the immediately preceding month, or null for first month */
+  function predictMonthState(st,mo,prevPreds){
+    var stateRetail=(vhnAgg[st]||{})[mo]||0;
+    var result={};
+    allModels.forEach(function(m){result[m]=0;});
+    if(!stateRetail)return result;
+
+    var moIdx=mosSorted.indexOf(mo);
+
+    /* Step 3: StateSupply(s,t) then multiply by Wm; normalize across models */
+    var q=moToQuarter(mo);
+    var stateOEM=q?((oemSwAgg[st]||{})[q]||0):0;
+    var totalOEM=q?(oemSwQTot[q]||0):0;
+    var stateSupply=totalOEM>0?stateOEM/totalOEM:0;
+    var rawSupply={},supplySum=0;
+    allModels.forEach(function(model){
+      var s=stateSupply*getWholesaleShare(model,mo);
+      rawSupply[model]=s;supplySum+=s;
+    });
+
+    /* RawWeight(m,s,t) = (0.25×Wm + 0.38×Ws + 0.22×Supply_norm + 0.15×Momentum) × Qm */
+    var rawWeights={},weightSum=0,maxW=-1,maxMod=null;
+    allModels.forEach(function(model){
+      var wm=getWholesaleShare(model,mo);
+      var ws=getStateLeadAffinity(model,mo,moIdx);
+      var supply=supplySum>0?(rawSupply[model]/supplySum):1/Math.max(allModels.length,1);
+      /* Step 4: model-specific momentum uses previous month's prediction share */
+      var momentum=getMomentum(model,st,mo,moIdx,prevPreds||null);
+      var qm=getLeadQuality(model,mo,moIdx);
+      var rw=Math.max(0,(0.25*wm+0.38*ws+0.22*supply+0.15*momentum)*qm);
+      rawWeights[model]=rw;weightSum+=rw;
+      if(rw>maxW){maxW=rw;maxMod=model;}
+    });
+
+    /* Fallback: uniform WS-weighted allocation if all weights zero */
+    if(!weightSum){
+      allModels.forEach(function(model){
+        var w=Math.max(getWholesaleShare(model,mo),1/Math.max(allModels.length,1));
+        rawWeights[model]=w;weightSum+=w;
+      });
+      maxMod=allModels[0];
+    }
+
+    /* Step 8: Normalize — Prediction(m,s,t) = VAHAN(s,t) × RawWeight / ΣRawWeight */
+    var allocTotal=0;
+    allModels.forEach(function(model){
+      var pred=Math.floor(stateRetail*(rawWeights[model]/weightSum));
+      result[model]=pred;allocTotal+=pred;
+    });
+    /* Assign rounding residual to highest-weight model to enforce exact sum */
+    var residual=stateRetail-allocTotal;
+    if(residual&&maxMod)result[maxMod]=(result[maxMod]||0)+residual;
+    return result;
+  }
+
+  /* ── Full prediction cache: computed chronologically so ModelShareLag(t-1) is available ── */
+  var fullPredCache=useMemo(function(){
+    var cache={};
+    allStates.forEach(function(st){cache[st]={};});
+    /* mosSorted is oldest→newest; iterate in order so prevPreds is always ready */
+    mosSorted.forEach(function(mo,moIdx){
+      allStates.forEach(function(st){
+        var prevMo=moIdx>0?mosSorted[moIdx-1]:null;
+        var prevPreds=prevMo?(cache[st][prevMo]||null):null;
+        cache[st][mo]=predictMonthState(st,mo,prevPreds);
+      });
+    });
+    return cache;
+  },[allStates,mosSorted,vhnAgg,wsAgg,moTotalWS,orgAgg,orgTotalByMo,oemSwAgg,oemSwQTot,fleetConvByMo,allModels]);
 
   /* ── Filtered states/models per dropdowns ── */
   var visStates=useMemo(function(){return selState==='All'?allStates:[selState];},[selState,allStates]);
   var visModels=useMemo(function(){return selModel==='All'?allModels:[selModel];},[selModel,allModels]);
 
-  /* ── Prediction tree: statePredTree[state][model][month] ── */
+  /* ── Prediction tree for TreeGrid: [state][model][month] ── */
   var statePredTree=useMemo(function(){
     var o={};
     visStates.forEach(function(st){
       o[st]={};
-      visModels.forEach(function(mod){
-        o[st][mod]={};
-        filtMos.forEach(function(mo){o[st][mod][mo]=predictCell(st,mod,mo);});
+      allModels.forEach(function(mod){o[st][mod]={};});
+      filtMos.forEach(function(mo){
+        var preds=(fullPredCache[st]&&fullPredCache[st][mo])||{};
+        allModels.forEach(function(mod){o[st][mod][mo]=preds[mod]||0;});
       });
     });
     return o;
-  },[visStates,visModels,filtMos,vhnAgg,wsAgg,moTotalWS,mosSorted,orgAgg]);
+  },[visStates,allModels,filtMos,fullPredCache]);
 
-  /* groups for TreeGrid */
+  /* groups for TreeGrid (unchanged) */
   var predGroups=useMemo(function(){
     return visStates.map(function(st){
       var totals={};
@@ -695,15 +850,19 @@ function RetailEngineTab(){
 
   var predCols=useMemo(function(){return filtMos.map(function(mo){return{id:mo,label:mo};});},[filtMos]);
 
-  /* ── Pan-India (ALL) predictions for accuracy & charts ── */
+  /* ── Pan-India predictions = true sum across all states (enforces allocation constraint) ── */
   var panPredByModel=useMemo(function(){
     var out={};
-    visModels.forEach(function(mod){
+    allModels.forEach(function(mod){
       out[mod]={};
-      filtMos.forEach(function(mo){out[mod][mo]=predictCell('__ALL__',mod,mo);});
+      filtMos.forEach(function(mo){
+        out[mod][mo]=allStates.reduce(function(s,st){
+          return s+((fullPredCache[st]&&fullPredCache[st][mo]&&fullPredCache[st][mo][mod])||0);
+        },0);
+      });
     });
     return out;
-  },[visModels,filtMos,vhnAgg,wsAgg,moTotalWS,mosSorted,orgAgg]);
+  },[allModels,filtMos,allStates,fullPredCache]);
 
   var accRows=useMemo(function(){
     var st=selState==='All'?'__ALL__':selState;
@@ -723,6 +882,61 @@ function RetailEngineTab(){
   var kpiActual=accRows.reduce(function(s,r){return s+r.actual;},0);
   var kpiVar=kpiActual>0?(kpiPred-kpiActual)/kpiActual*100:null;
   var kpiMods=visModels.filter(function(m){return filtMos.some(function(mo){return (panPredByModel[m]||{})[mo]>0;});}).length;
+
+  /* ── Additional KPIs ── */
+  var kpiConfidence=useMemo(function(){
+    var total=0,confident=0;
+    allStates.forEach(function(st){
+      filtMos.forEach(function(mo){
+        total++;
+        var q=moToQuarter(mo);
+        var sigs=[
+          allModels.some(function(m){return (orgAgg[mo]||{})[m]>0;}),
+          (moTotalWS[mo]||0)>0,
+          ((vhnAgg[st]||{})[mo]||0)>0,
+          !!(q&&(oemSwAgg[st]||{})[q]>0)
+        ].filter(Boolean).length;
+        if(sigs>=3)confident++;
+      });
+    });
+    return total>0?Math.round(confident/total*100):0;
+  },[allStates,filtMos,allModels,orgAgg,moTotalWS,vhnAgg,oemSwAgg]);
+
+  var kpiAllocError=useMemo(function(){
+    var maxErr=0;
+    allStates.forEach(function(st){
+      filtMos.forEach(function(mo){
+        var vhn=(vhnAgg[st]||{})[mo]||0;
+        if(!vhn)return;
+        var predSum=allModels.reduce(function(s,mod){return s+((fullPredCache[st]&&fullPredCache[st][mo]&&fullPredCache[st][mo][mod])||0);},0);
+        var err=Math.abs(vhn-predSum);
+        if(err>maxErr)maxErr=err;
+      });
+    });
+    return maxErr;
+  },[allStates,filtMos,vhnAgg,allModels,fullPredCache]);
+
+  var kpiTopRising=useMemo(function(){
+    if(filtMos.length<2)return'—';
+    var mo1=filtMos[0],mo2=filtMos[1];
+    var deltas=allModels.map(function(m){
+      var v1=(panPredByModel[m]||{})[mo1]||0;
+      var v2=(panPredByModel[m]||{})[mo2]||0;
+      return{m:m,d:v2>0?(v1-v2)/v2*100:0};
+    }).filter(function(x){return x.d>0;}).sort(function(a,b){return b.d-a.d;});
+    return deltas.slice(0,2).map(function(x){return x.m.split(' ')[0]+' ↑'+x.d.toFixed(0)+'%';}).join(' · ')||'—';
+  },[filtMos,allModels,panPredByModel]);
+
+  var kpiSupplyConstrained=useMemo(function(){
+    if(!filtMos.length)return 0;
+    var q=moToQuarter(filtMos[0]);
+    if(!q||!oemSwQTot[q])return 0;
+    var avgShare=1/Math.max(allStates.length,1);
+    return allStates.filter(function(st){
+      var share=((oemSwAgg[st]&&oemSwAgg[st][q])||0)/(oemSwQTot[q]||1);
+      return share>0&&share<avgShare*0.5;
+    }).length;
+  },[filtMos,allStates,oemSwAgg,oemSwQTot]);
 
   function doExportAccuracy(){
     var header=['Month','Vaahan Actual','Predicted','Difference','Variance %'];
@@ -798,21 +1012,21 @@ function RetailEngineTab(){
         ce(FilterSel,{label:'Model',value:selModel,onChange:setSelModel,
           options:[{value:'All',label:'All Models'},...allModels.map(function(m){return{value:m,label:m};})]}),
         ce('div',{style:{fontSize:11,color:'#94a3b8',marginLeft:'auto'}},
-          commonMonths.length+' months · '+allModels.length+' HMSI models · '+allStates.length+' states · ✓ All signals active')
+          commonMonths.length+' months · '+allModels.length+' models · '+allStates.length+' states · ✓ All signals active')
       )
     ),
 
     /* ── Signals ── */
     ce('div',{className:'signal-row'},
       ce('span',{style:{fontWeight:600,color:'#374151'}},'Signals:'),
-      ce('span',{className:'sig-item'},ce('span',{className:'sig-dot',style:{background:'#2563eb'}}),ce('b',null,'40%'),' State Momentum (6m)'),
-      ce('span',{className:'sig-item'},ce('span',{className:'sig-dot',style:{background:'#16a34a'}}),ce('b',null,'30%'),' Organic Demand'),
-      ce('span',{className:'sig-item'},ce('span',{className:'sig-dot',style:{background:'#d97706'}}),ce('b',null,'20%'),' WS Share Trend'),
-      ce('span',{className:'sig-item'},ce('span',{className:'sig-dot',style:{background:'#7c3aed'}}),ce('b',null,'10%'),' Seasonality'),
-      ce('span',{style:{color:'#94a3b8',fontSize:10.5}},'| Discount 0.93–1.00 · variance reduced –5%')
+      ce('span',{className:'sig-item'},ce('span',{className:'sig-dot',style:{background:'#2563eb'}}),ce('b',null,'25%'),' WS Share (Wm)'),
+      ce('span',{className:'sig-item'},ce('span',{className:'sig-dot',style:{background:'#16a34a'}}),ce('b',null,'38%'),' Organic Affinity (Ws)'),
+      ce('span',{className:'sig-item'},ce('span',{className:'sig-dot',style:{background:'#d97706'}}),ce('b',null,'22%'),' Model-Sensitive Supply'),
+      ce('span',{className:'sig-item'},ce('span',{className:'sig-dot',style:{background:'#7c3aed'}}),ce('b',null,'15%'),' Lag Momentum'),
+      ce('span',{style:{color:'#94a3b8',fontSize:10.5}},'| × Dynamic Qm · Step 8 re-normalizes to VAHAN')
     ),
 
-    /* ── KPIs ── */
+    /* ── KPIs row 1 ── */
     ce('div',{className:'kpi-grid'},
       ce('div',{className:'kpi-card',style:{borderTopColor:'#d97706'}},
         ce('div',{className:'kpi-label'},'Total Predicted'),
@@ -834,6 +1048,30 @@ function RetailEngineTab(){
         ce('div',{className:'kpi-label'},'Models Active'),
         ce('div',{className:'kpi-value',style:{fontSize:20}},kpiMods),
         ce('div',{className:'kpi-sub'},'with non-zero predictions')
+      )
+    ),
+
+    /* ── KPIs row 2 ── */
+    ce('div',{className:'kpi-grid',style:{marginTop:-8}},
+      ce('div',{className:'kpi-card',style:{borderTopColor:kpiConfidence>=80?'#16a34a':kpiConfidence>=60?'#d97706':'#dc2626'}},
+        ce('div',{className:'kpi-label'},'Prediction Confidence'),
+        ce('div',{className:'kpi-value',style:{fontSize:20,color:kpiConfidence>=80?'#16a34a':kpiConfidence>=60?'#d97706':'#dc2626'}},kpiConfidence+'%'),
+        ce('div',{className:'kpi-sub'},'State-months with ≥3 active signals')
+      ),
+      ce('div',{className:'kpi-card',style:{borderTopColor:kpiAllocError===0?'#16a34a':'#dc2626'}},
+        ce('div',{className:'kpi-label'},'Allocation Error'),
+        ce('div',{className:'kpi-value',style:{fontSize:20,color:kpiAllocError===0?'#16a34a':'#dc2626'}},kpiAllocError===0?'0 ✓':Nfw(kpiAllocError)),
+        ce('div',{className:'kpi-sub'},'Max |Σ Pred − VAHAN| per state-month')
+      ),
+      ce('div',{className:'kpi-card',style:{borderTopColor:'#0891b2'}},
+        ce('div',{className:'kpi-label'},'Top Rising Models'),
+        ce('div',{className:'kpi-value',style:{fontSize:13,color:'#0e7490',lineHeight:1.4,fontFamily:'inherit',marginTop:4}},kpiTopRising),
+        ce('div',{className:'kpi-sub'},'Highest MoM growth vs prior month')
+      ),
+      ce('div',{className:'kpi-card',style:{borderTopColor:kpiSupplyConstrained>5?'#dc2626':kpiSupplyConstrained>0?'#d97706':'#16a34a'}},
+        ce('div',{className:'kpi-label'},'Supply Constrained States'),
+        ce('div',{className:'kpi-value',style:{fontSize:20,color:kpiSupplyConstrained>5?'#dc2626':kpiSupplyConstrained>0?'#d97706':'#16a34a'}},kpiSupplyConstrained),
+        ce('div',{className:'kpi-sub'},'States below 50% of avg OEM share')
       )
     ),
 
