@@ -1,0 +1,625 @@
+<title>Mihir Bhatt — Career Profile Kit</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --navy:#0C1A38;
+  --navy-light:#1A2D56;
+  --blue:#1A50D4;
+  --blue-wash:#EBF0FC;
+  --blue-mid:#4A6FE0;
+  --ink:#13131F;
+  --ink-2:#44445C;
+  --ink-3:#7E7E96;
+  --sidebar:#F3F4FA;
+  --page:#FFFFFF;
+  --rule:#E0E2EE;
+  --green:#1A7040;
+  --green-wash:#E8F5EE;
+}
+@media(prefers-color-scheme:dark){
+  :root{
+    --navy:#040C1E;
+    --navy-light:#0E1830;
+    --blue:#5578E8;
+    --blue-wash:#121D3C;
+    --blue-mid:#5578E8;
+    --ink:#EAEAF6;
+    --ink-2:#9898B4;
+    --ink-3:#5A5A74;
+    --sidebar:#090E1E;
+    --page:#0D1224;
+    --rule:#1E2038;
+  }
+}
+:root[data-theme="dark"]{
+  --navy:#040C1E;--navy-light:#0E1830;--blue:#5578E8;--blue-wash:#121D3C;
+  --blue-mid:#5578E8;--ink:#EAEAF6;--ink-2:#9898B4;--ink-3:#5A5A74;
+  --sidebar:#090E1E;--page:#0D1224;--rule:#1E2038;
+}
+:root[data-theme="light"]{
+  --navy:#0C1A38;--navy-light:#1A2D56;--blue:#1A50D4;--blue-wash:#EBF0FC;
+  --blue-mid:#4A6FE0;--ink:#13131F;--ink-2:#44445C;--ink-3:#7E7E96;
+  --sidebar:#F3F4FA;--page:#FFFFFF;--rule:#E0E2EE;
+}
+
+body{font-family:system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif;background:var(--sidebar);color:var(--ink);font-size:14px;line-height:1.5;min-height:100vh}
+
+/* shell */
+.shell{max-width:980px;margin:0 auto;padding:24px 16px}
+.kit-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px}
+.kit-title{font-size:13px;font-weight:700;color:var(--ink-3);text-transform:uppercase;letter-spacing:.1em}
+.tab-bar{display:flex;gap:3px;background:var(--page);border:1px solid var(--rule);border-radius:10px;padding:3px}
+.tab-btn{padding:7px 20px;border:none;background:transparent;border-radius:7px;font:600 11.5px/1 system-ui;color:var(--ink-3);cursor:pointer;transition:all .15s;letter-spacing:.04em;text-transform:uppercase}
+.tab-btn.active{background:var(--navy);color:#fff;box-shadow:0 2px 8px rgba(0,0,0,.3)}
+.tab-btn:hover:not(.active){color:var(--blue);background:var(--blue-wash)}
+.tab-pane{display:none}.tab-pane.active{display:block}
+
+/* ===================== RESUME ===================== */
+.resume{background:var(--page);border:1px solid var(--rule);border-radius:10px;overflow:hidden;box-shadow:0 4px 28px rgba(0,0,0,.09)}
+.r-hdr{background:var(--navy);padding:30px 36px 26px;position:relative;overflow:hidden}
+.r-hdr::after{content:'';position:absolute;top:-40px;right:-40px;width:240px;height:240px;border-radius:50%;background:rgba(255,255,255,.03);pointer-events:none}
+.r-name{font-family:Georgia,'Times New Roman',serif;font-size:32px;font-weight:normal;letter-spacing:-.025em;color:#fff;margin-bottom:5px}
+.r-tagline{font-size:11px;color:#8AA0C8;letter-spacing:.1em;text-transform:uppercase;font-weight:600;margin-bottom:16px}
+.r-contacts{display:flex;flex-wrap:wrap;gap:6px 22px;font-size:12px;color:#A0B4D0}
+.r-contacts span{display:flex;align-items:center;gap:6px}
+.r-contacts .dot{width:3px;height:3px;border-radius:50%;background:#3A5080;flex-shrink:0}
+
+/* body grid */
+.r-body{display:grid;grid-template-columns:230px 1fr}
+.r-sidebar{background:var(--sidebar);border-right:1px solid var(--rule);padding:22px 18px}
+.r-main{padding:22px 28px;background:var(--page)}
+
+/* section label */
+.sec{margin-bottom:20px}
+.sec-label{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.14em;color:var(--blue);border-bottom:1px solid var(--rule);padding-bottom:5px;margin-bottom:10px}
+
+/* edu */
+.edu-entry{margin-bottom:14px}
+.edu-degree{font-size:12px;font-weight:700;color:var(--ink);line-height:1.35;margin-bottom:2px}
+.edu-uni{font-size:11px;color:var(--ink-2);line-height:1.4;margin-bottom:1px}
+.edu-detail{font-size:10.5px;color:var(--ink-3);line-height:1.4;font-style:italic}
+.edu-year{font-size:10.5px;color:var(--ink-3);font-variant-numeric:tabular-nums;margin-top:2px}
+
+/* skill groups */
+.sg{margin-bottom:11px}
+.sg-name{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--ink-3);margin-bottom:5px}
+.tags{display:flex;flex-wrap:wrap;gap:4px}
+.tag{font-size:10.5px;padding:2px 8px;background:var(--blue-wash);color:var(--blue);border-radius:4px;font-weight:600;line-height:1.6}
+.tag.n{background:var(--rule);color:var(--ink-2)}
+
+/* lang */
+.lang-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;font-size:11.5px}
+.lang-name{color:var(--ink-2);font-weight:500}
+.lang-lvl{font-size:10px;color:var(--ink-3)}
+
+/* summary */
+.summary-text{font-size:12.5px;color:var(--ink-2);line-height:1.7;border-left:3px solid var(--blue);padding-left:13px}
+
+/* exp */
+.exp{margin-bottom:18px}
+.exp-hdr{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:4px;margin-bottom:2px}
+.exp-co{font-size:13px;font-weight:700;color:var(--ink)}
+.exp-dates{font-size:10.5px;color:var(--ink-3);font-variant-numeric:tabular-nums;white-space:nowrap}
+.exp-title{font-size:11.5px;color:var(--blue);font-weight:600;margin-bottom:7px}
+.exp-ul{list-style:none;padding:0}
+.exp-ul li{font-size:11.5px;color:var(--ink-2);line-height:1.58;padding-left:12px;position:relative;margin-bottom:4px}
+.exp-ul li::before{content:'–';position:absolute;left:0;color:var(--ink-3)}
+.exp-ul li b{color:var(--ink);font-weight:700}
+.exp-ul li i{color:var(--blue);font-style:normal;font-weight:600;font-variant-numeric:tabular-nums}
+
+.r-divider{border:none;border-top:1px solid var(--rule);margin:18px 0}
+
+/* projects */
+.proj{margin-bottom:10px}
+.proj-name{font-size:12px;font-weight:700;color:var(--ink);margin-bottom:2px}
+.proj-tech{font-size:10.5px;color:var(--blue);font-weight:600;margin-bottom:3px}
+.proj-desc{font-size:11.5px;color:var(--ink-2);line-height:1.5}
+
+/* intern */
+.intern-ul{list-style:none}
+.intern-ul li{font-size:11.5px;color:var(--ink-2);padding-left:12px;position:relative;margin-bottom:5px;line-height:1.5}
+.intern-ul li::before{content:'–';position:absolute;left:0;color:var(--ink-3)}
+.intern-ul li strong{color:var(--ink);font-weight:600}
+
+/* print button */
+.print-btn{display:inline-flex;align-items:center;gap:6px;padding:7px 16px;background:var(--blue-wash);color:var(--blue);border:1px solid currentColor;border-radius:7px;font:600 11px/1 system-ui;cursor:pointer;letter-spacing:.05em;text-transform:uppercase;margin-bottom:14px;transition:all .15s}
+.print-btn:hover{background:var(--blue);color:#fff}
+.print-btn svg{flex-shrink:0}
+
+/* ===================== NAUKRI ===================== */
+.nk-intro{background:var(--blue-wash);border:1px solid var(--blue-mid);border-radius:10px;padding:13px 18px;margin-bottom:22px;font-size:12.5px;color:var(--blue);line-height:1.6}
+.nk-intro strong{font-weight:700}
+
+.nk-card{border:1px solid var(--rule);border-radius:10px;margin-bottom:14px;overflow:hidden;background:var(--page)}
+.nk-card-hdr{background:var(--sidebar);border-bottom:1px solid var(--rule);padding:9px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.nk-card-title{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-3)}
+.nk-meta{display:flex;align-items:center;gap:10px}
+.nk-limit{font-size:10px;color:var(--ink-3);font-variant-numeric:tabular-nums}
+.nk-content{padding:16px;font-size:13px;line-height:1.75;color:var(--ink);white-space:pre-wrap;font-family:system-ui,-apple-system,'Segoe UI',sans-serif;user-select:text}
+.nk-content.hl{font-weight:700;font-size:14px;line-height:1.5}
+.nk-skills-grid{display:flex;flex-wrap:wrap;gap:6px;padding:14px 16px}
+.nk-skill{padding:5px 12px;background:var(--blue-wash);color:var(--blue);border-radius:20px;font-size:12px;font-weight:600}
+.nk-footer{padding:9px 16px;border-top:1px solid var(--rule);display:flex;align-items:center;justify-content:space-between;gap:8px}
+.nk-foot-note{font-size:10.5px;color:var(--ink-3)}
+.copy-btn{font:700 10px/1 system-ui;padding:6px 16px;background:var(--blue);color:#fff;border:none;border-radius:6px;cursor:pointer;letter-spacing:.06em;text-transform:uppercase;transition:all .15s;white-space:nowrap}
+.copy-btn:hover{opacity:.85}
+.copy-btn.ok{background:var(--green)}
+.copy-btn.ok::before{content:'✓ '}
+
+.nk-section-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-3);margin:28px 0 10px;border-top:1px solid var(--rule);padding-top:16px}
+
+/* responsive */
+@media(max-width:720px){
+  .r-body{grid-template-columns:1fr}
+  .r-sidebar{border-right:none;border-bottom:1px solid var(--rule)}
+  .shell{padding:16px 10px}
+}
+
+/* print */
+@media print{
+  body{background:#fff}
+  .shell{padding:0;max-width:100%}
+  .kit-header,.tab-bar,.print-btn{display:none!important}
+  .tab-pane{display:block!important}
+  #tab-naukri{display:none!important}
+  .resume{border:none;border-radius:0;box-shadow:none}
+  .r-hdr{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .r-sidebar{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .r-body{grid-template-columns:210px 1fr}
+}
+</style>
+
+<div class="shell">
+  <div class="kit-header">
+    <span class="kit-title">Mihir Bhatt — Career Profile Kit 2026</span>
+    <div class="tab-bar">
+      <button class="tab-btn active" onclick="switchTab('resume',this)">Resume</button>
+      <button class="tab-btn" onclick="switchTab('naukri',this)">Naukri Profile</button>
+    </div>
+  </div>
+
+  <!-- =================== RESUME TAB =================== -->
+  <div class="tab-pane active" id="tab-resume">
+    <button class="print-btn" onclick="window.print()">
+      <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M4 5V1h8v4M4 11H2a1 1 0 01-1-1V6a1 1 0 011-1h12a1 1 0 011 1v4a1 1 0 01-1 1h-2M4 8h8v7H4V8z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
+      Print / Save PDF
+    </button>
+
+    <div class="resume">
+      <!-- HEADER -->
+      <div class="r-hdr">
+        <div class="r-name">Mihir Bhatt</div>
+        <div class="r-tagline">Marketing Strategy &amp; Category Management&nbsp;&nbsp;·&nbsp;&nbsp;Revenue &amp; P&amp;L Ownership&nbsp;&nbsp;·&nbsp;&nbsp;Business Analytics</div>
+        <div class="r-contacts">
+          <span><span class="dot"></span>+91 97183 39311</span>
+          <span><span class="dot"></span>mihir.bhatt14@gmail.com</span>
+          <span><span class="dot"></span>Delhi NCR</span>
+          <span><span class="dot"></span>English · German (working) · Hindi</span>
+        </div>
+      </div>
+
+      <!-- BODY -->
+      <div class="r-body">
+        <!-- SIDEBAR -->
+        <div class="r-sidebar">
+
+          <div class="sec">
+            <div class="sec-label">Education</div>
+            <div class="edu-entry">
+              <div class="edu-degree">M.Sc. — Global Production Engineering &amp; Management</div>
+              <div class="edu-uni">Warsaw University of Technology, Poland</div>
+              <div class="edu-detail">Erasmus+ exchange &amp; Master Thesis — TU Graz, Austria</div>
+              <div class="edu-detail">Minors: International Marketing · Financial Management · Business Analytics</div>
+              <div class="edu-year">2018 – 2020</div>
+            </div>
+            <div class="edu-entry">
+              <div class="edu-degree">B.Tech — Mechanical Engineering</div>
+              <div class="edu-uni">G.L. Bajaj Institute of Management &amp; Technology, India</div>
+              <div class="edu-year">2013 – 2017</div>
+            </div>
+          </div>
+
+          <div class="sec">
+            <div class="sec-label">Core Skills</div>
+            <div class="sg">
+              <div class="sg-name">Marketing &amp; Revenue</div>
+              <div class="tags">
+                <span class="tag">Marketing Strategy</span>
+                <span class="tag">Category Management</span>
+                <span class="tag">Full-Funnel Optimization</span>
+                <span class="tag">OEM Campaign Mgmt</span>
+                <span class="tag">Channel ROI</span>
+                <span class="tag">P&amp;L Governance</span>
+                <span class="tag">Demand Forecasting</span>
+                <span class="tag">Financial Modeling</span>
+              </div>
+            </div>
+            <div class="sg">
+              <div class="sg-name">Analytics &amp; Tools</div>
+              <div class="tags">
+                <span class="tag">Power BI</span>
+                <span class="tag">SQL</span>
+                <span class="tag">Advanced Excel / VBA</span>
+                <span class="tag">Power Query</span>
+                <span class="tag n">MS Access</span>
+                <span class="tag n">ERP</span>
+              </div>
+            </div>
+            <div class="sg">
+              <div class="sg-name">Program &amp; Strategy</div>
+              <div class="tags">
+                <span class="tag n">Agile / Waterfall</span>
+                <span class="tag n">BRD / FRD</span>
+                <span class="tag n">Stakeholder Mgmt</span>
+                <span class="tag n">GAP &amp; Risk Analysis</span>
+                <span class="tag n">Go-to-Market</span>
+                <span class="tag n">Business Case Dev.</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="sec">
+            <div class="sec-label">Languages</div>
+            <div class="lang-row"><span class="lang-name">English</span><span class="lang-lvl">Fluent</span></div>
+            <div class="lang-row"><span class="lang-name">German</span><span class="lang-lvl">Working knowledge</span></div>
+            <div class="lang-row"><span class="lang-name">Hindi</span><span class="lang-lvl">Native</span></div>
+            <div class="lang-row"><span class="lang-name">Polish</span><span class="lang-lvl">Beginner</span></div>
+          </div>
+
+        </div>
+
+        <!-- MAIN -->
+        <div class="r-main">
+
+          <div class="sec">
+            <div class="sec-label">Professional Summary</div>
+            <div class="summary-text">Marketing strategy and category management professional with <b>6.5+ years</b> driving revenue growth, P&amp;L performance, and cross-functional program execution across auto-tech, IT services, and global manufacturing. At CarDekho, currently owns the <b>2W vertical's end-to-end business strategy</b> — managing <b>₹1–5 Cr monthly revenue</b> across OEM campaigns and partner channels, with full accountability for pricing, channel ROI, and contribution margins. Combines commercial ownership with analytical depth (Power BI, SQL, Excel VBA) and a uniquely international perspective from an M.Sc. at Warsaw University of Technology with Erasmus+ at TU Graz (Austria), including minors in International Marketing and Financial Management.</div>
+          </div>
+
+          <div class="sec">
+            <div class="sec-label">Professional Experience</div>
+
+            <div class="exp">
+              <div class="exp-hdr">
+                <span class="exp-co">CarDekho Group (Girnarsot)</span>
+                <span class="exp-dates">Sep 2024 – Present</span>
+              </div>
+              <div class="exp-title">Senior Business Analyst – Business Strategy &amp; Planning &nbsp;|&nbsp; 2W Vertical</div>
+              <ul class="exp-ul">
+                <li>Own the 2W vertical's end-to-end revenue strategy — managing <i>₹1–5 Cr monthly</i> across OEM campaigns and partner channels; accountable for <b>pricing decisions, channel ROI, and contribution margin performance</b> against weekly targets.</li>
+                <li>Drive full-funnel marketing performance from acquisition through conversion — diagnosing drop-offs, aligning product, sales, and marketing teams, and deploying corrective actions to improve <b>revenue per lead</b> and overall funnel efficiency.</li>
+                <li>Built and maintain Power BI dashboards consolidating traffic quality, lead conversion, and partner performance — used directly by leadership for real-time revenue and channel strategy decisions.</li>
+                <li>Develop <b>demand forecasts and delivery plans</b> to consistently hit monthly revenue commitments; evaluate new monetization opportunities with structured financial models and business cases.</li>
+                <li>Operate at the intersection of product, sales, and marketing in a cross-functional setup — ensuring shared execution stays on track under tight timelines.</li>
+              </ul>
+            </div>
+
+            <hr class="r-divider">
+
+            <div class="exp">
+              <div class="exp-hdr">
+                <span class="exp-co">Conduent Business Services</span>
+                <span class="exp-dates">Mar 2022 – Aug 2024</span>
+              </div>
+              <div class="exp-title">Senior Business Analyst – Project Management &amp; Operations</div>
+              <ul class="exp-ul">
+                <li>Delivered <b>3–5 end-to-end transformation projects</b> — including TA Transformation, chatbot efficiency analysis, and U.S. retirement benefit automation — managing cross-functional teams of 2–5 from requirements through release.</li>
+                <li>Led stakeholder workshops and produced BRD/FRD documentation, bridging business and technical teams to reduce ambiguity and rework across project cycles.</li>
+                <li>Automated reporting workflows using SQL, Power Query, and VBA — reducing manual analyst effort by <i>~30%</i> and improving reporting turnaround significantly.</li>
+                <li>Managed projects across Agile and Waterfall; ran sprint planning, backlog prioritization, and release coordination with distributed teams.</li>
+                <li>Identified business expansion opportunities within client accounts and proposed structured solution frameworks to leadership.</li>
+              </ul>
+            </div>
+
+            <hr class="r-divider">
+
+            <div class="exp">
+              <div class="exp-hdr">
+                <span class="exp-co">Wipro Technology</span>
+                <span class="exp-dates">Jul 2021 – Mar 2022</span>
+              </div>
+              <div class="exp-title">Associate Business Analyst – Client Insights &amp; Business Analytics</div>
+              <ul class="exp-ul">
+                <li>Built Power BI dashboards and reporting systems aligned to client KPIs and SLAs for logistics and manufacturing clients.</li>
+                <li>Developed SQL queries, stored procedures, and automation scripts that streamlined end-to-end reporting cycles; managed KPI/SLA publication to stakeholders.</li>
+                <li>Conducted performance audits and periodical process capability studies, surfacing actionable improvement areas.</li>
+              </ul>
+            </div>
+
+            <hr class="r-divider">
+
+            <div class="exp">
+              <div class="exp-hdr">
+                <span class="exp-co">Vestige Best Deals</span>
+                <span class="exp-dates">Oct 2020 – Jul 2021</span>
+              </div>
+              <div class="exp-title">Supply Chain &amp; Logistics Executive</div>
+              <ul class="exp-ul">
+                <li>Managed PAN India forward and reverse logistics; led capacity planning and stock allocation for product availability across the network.</li>
+                <li>Implemented Poka-Yoke process improvements to reduce operational errors; built vendor performance reporting systems.</li>
+              </ul>
+            </div>
+
+            <hr class="r-divider">
+
+            <div class="exp">
+              <div class="exp-hdr">
+                <span class="exp-co">Motherson Sumi Systems Limited</span>
+                <span class="exp-dates">Jul 2017 – Jul 2018</span>
+              </div>
+              <div class="exp-title">Graduate Engineer Trainee</div>
+              <ul class="exp-ul">
+                <li>Supported lean manufacturing operations through Kanban, KAIZEN, 5S, and SPC implementation.</li>
+                <li>Prepared APQP/PPAP documentation for new development parts; conducted capacity analysis and CAPEX budgeting.</li>
+              </ul>
+            </div>
+
+          </div>
+
+          <div class="sec">
+            <div class="sec-label">Projects</div>
+            <div class="proj">
+              <div class="proj-name">Bajaj Auto — Retail Intelligence Engine &nbsp;<span style="font-weight:400;color:var(--ink-3)">2025</span></div>
+              <div class="proj-tech">React · Chart.js · JavaScript · Commercial Analytics</div>
+              <div class="proj-desc">Designed and built a full retail analytics dashboard for Bajaj Auto's 2W segment — visualizing state-level model performance, EV/ICE sales mix, market share trends, and dealer network data. Demonstrates applied commercial analytics for automotive strategy and category management.</div>
+            </div>
+            <div class="proj">
+              <div class="proj-name">Marketing Plan — International Industrial Marketing &nbsp;<span style="font-weight:400;color:var(--ink-3)">Warsaw University, 2019</span></div>
+              <div class="proj-desc">Analyzed market entry strategy for an automotive company entering two new international markets; applied Porter's Five Forces, PESTLE analysis, and competitive pricing frameworks.</div>
+            </div>
+          </div>
+
+          <div class="sec">
+            <div class="sec-label">Internships</div>
+            <ul class="intern-ul">
+              <li><strong>Idemitsu Lube India Pvt. Ltd.</strong> — 8 weeks (2019) · Worked with the marketing department on a market activation project across dealer and retail channels.</li>
+              <li><strong>Diesel Locomotive Shed, Tughlakabad (Indian Railways)</strong> — 4 weeks (2016) · Studied turbocharger working, overhauling, and surging.</li>
+              <li><strong>New Holland Fiat India Pvt. Ltd.</strong> — 4 weeks (2015) · Studied assembly and working of four-wheel drive systems.</li>
+            </ul>
+          </div>
+
+        </div><!-- /r-main -->
+      </div><!-- /r-body -->
+    </div><!-- /resume -->
+  </div><!-- /tab-resume -->
+
+  <!-- =================== NAUKRI TAB =================== -->
+  <div class="tab-pane" id="tab-naukri">
+    <div class="nk-intro">
+      <strong>How to use this:</strong> Each card below maps to a specific field in your Naukri profile. Click <strong>Copy</strong>, then paste directly into that section. Update your existing text — don't add a new entry.
+    </div>
+
+    <!-- HEADLINE -->
+    <div class="nk-card">
+      <div class="nk-card-hdr">
+        <span class="nk-card-title">Profile Headline</span>
+        <div class="nk-meta"><span class="nk-limit">Naukri limit: 120 chars</span></div>
+      </div>
+      <div class="nk-content hl" id="nk-headline">Marketing Strategy &amp; Category Manager | Revenue &amp; P&amp;L Ownership | Auto-tech | 6.5 Yrs | Power BI | SQL</div>
+      <div class="nk-footer">
+        <span class="nk-foot-note">97 characters — within limit</span>
+        <button class="copy-btn" onclick="copyCard('nk-headline',this)">Copy</button>
+      </div>
+    </div>
+
+    <!-- SUMMARY -->
+    <div class="nk-card">
+      <div class="nk-card-hdr">
+        <span class="nk-card-title">Profile Summary</span>
+        <div class="nk-meta"><span class="nk-limit">Naukri limit: ~2,000 chars</span></div>
+      </div>
+      <div class="nk-content" id="nk-summary">Marketing strategy professional with 6.5+ years driving revenue growth, category performance, and cross-functional program delivery across auto-tech, IT services, and manufacturing.
+
+Currently at CarDekho (India's leading auto marketplace) as the sole owner of the 2W vertical's business strategy — managing ₹1–5 Cr monthly revenue across OEM campaigns and partner channels, with full accountability for pricing decisions, channel ROI, contribution margin tracking, and demand forecasting. Align directly with leadership on growth targets and monetization initiatives.
+
+Strong analytical foundation: Power BI dashboard development, SQL, Excel VBA, and financial modeling — used to convert funnel and commercial data into strategic action, not just reporting.
+
+International academic background: M.Sc. in Global Production Engineering &amp; Management from Warsaw University of Technology (Poland), with Erasmus+ exchange at TU Graz (Austria). Minors in International Marketing and Financial Management. Working knowledge of German — a differentiator for global or European-linked organizations.
+
+Open to: Marketing Strategy | Category Management | Revenue &amp; Growth Management | Program Management roles across Auto-tech, E-commerce, Consumer Brands, FMCG, and BFSI.</div>
+      <div class="nk-footer">
+        <span class="nk-foot-note">~1,050 characters</span>
+        <button class="copy-btn" onclick="copyCard('nk-summary',this)">Copy</button>
+      </div>
+    </div>
+
+    <!-- SKILLS -->
+    <div class="nk-card">
+      <div class="nk-card-hdr">
+        <span class="nk-card-title">Key Skills (add/replace in Skills section)</span>
+        <div class="nk-meta"><span class="nk-limit">Add as individual tags on Naukri</span></div>
+      </div>
+      <div class="nk-skills-grid">
+        <span class="nk-skill">Marketing Strategy</span>
+        <span class="nk-skill">Category Management</span>
+        <span class="nk-skill">Revenue Management</span>
+        <span class="nk-skill">P&amp;L Management</span>
+        <span class="nk-skill">Full-Funnel Marketing</span>
+        <span class="nk-skill">OEM Campaign Management</span>
+        <span class="nk-skill">Channel ROI Analysis</span>
+        <span class="nk-skill">Demand Forecasting</span>
+        <span class="nk-skill">Financial Modeling</span>
+        <span class="nk-skill">Business Strategy</span>
+        <span class="nk-skill">Go-to-Market Strategy</span>
+        <span class="nk-skill">Market Analysis</span>
+        <span class="nk-skill">Power BI</span>
+        <span class="nk-skill">SQL</span>
+        <span class="nk-skill">Advanced Excel / VBA</span>
+        <span class="nk-skill">Business Analytics</span>
+        <span class="nk-skill">Stakeholder Management</span>
+        <span class="nk-skill">Cross-functional Coordination</span>
+        <span class="nk-skill">Program Management</span>
+        <span class="nk-skill">Agile</span>
+        <span class="nk-skill">Business Case Development</span>
+        <span class="nk-skill">KPI Governance</span>
+        <span class="nk-skill">Product Marketing</span>
+      </div>
+      <div class="nk-footer">
+        <span class="nk-foot-note">24 skills — prioritize the top 15 if Naukri limits you</span>
+        <button class="copy-btn" onclick="copySkills(this)">Copy as list</button>
+      </div>
+    </div>
+
+    <!-- EXPERIENCE DESCRIPTIONS -->
+    <div class="nk-section-title">Experience Descriptions — paste into each role on Naukri</div>
+
+    <!-- CarDekho -->
+    <div class="nk-card">
+      <div class="nk-card-hdr">
+        <span class="nk-card-title">CarDekho Group &nbsp;|&nbsp; Senior Business Analyst – Strategy &amp; Planning &nbsp;|&nbsp; Sep 2024 – Present</span>
+      </div>
+      <div class="nk-content" id="nk-exp1">• Own the 2W vertical's end-to-end revenue strategy at CarDekho — managing ₹1–5 Cr monthly across OEM campaigns and partner channels; accountable for pricing decisions, channel ROI, and contribution margin performance against weekly targets.
+
+• Drive full-funnel marketing optimization from acquisition through conversion — diagnosing funnel drop-offs and coordinating with product, sales, and marketing teams to improve revenue per lead and overall efficiency.
+
+• Built and maintain Power BI dashboards consolidating traffic quality, lead conversion, and partner performance data; used directly by leadership for real-time revenue and channel strategy decisions.
+
+• Develop demand forecasts and delivery plans to consistently hit monthly revenue commitments; evaluate new monetization opportunities through structured financial models and business cases.
+
+• Act as cross-functional coordinator between product, sales, and marketing — ensuring shared execution stays on track against tight timelines in a shared-ownership setup.</div>
+      <div class="nk-footer">
+        <span class="nk-foot-note"></span>
+        <button class="copy-btn" onclick="copyCard('nk-exp1',this)">Copy</button>
+      </div>
+    </div>
+
+    <!-- Conduent -->
+    <div class="nk-card">
+      <div class="nk-card-hdr">
+        <span class="nk-card-title">Conduent Business Services &nbsp;|&nbsp; Senior Business Analyst – PM &amp; Operations &nbsp;|&nbsp; Mar 2022 – Aug 2024</span>
+      </div>
+      <div class="nk-content" id="nk-exp2">• Delivered 3–5 end-to-end projects — including TA Transformation, chatbot efficiency analysis, and U.S. retirement benefit calculation automation — managing cross-functional teams of 2–5 from requirements through release.
+
+• Led stakeholder workshops and BRD/FRD documentation to align business and technical teams, reducing ambiguity and rework across project cycles.
+
+• Automated reporting workflows using SQL, Power Query, and VBA — reducing manual analyst effort by ~30% and significantly improving reporting turnaround time.
+
+• Managed projects across Agile and Waterfall methodologies; ran sprint planning, backlog prioritization, and release coordination with distributed teams.
+
+• Identified business expansion opportunities within client accounts and proposed structured solution frameworks; created SOPs to standardize delivery and reduce onboarding ramp-up time.</div>
+      <div class="nk-footer">
+        <span class="nk-foot-note"></span>
+        <button class="copy-btn" onclick="copyCard('nk-exp2',this)">Copy</button>
+      </div>
+    </div>
+
+    <!-- Wipro -->
+    <div class="nk-card">
+      <div class="nk-card-hdr">
+        <span class="nk-card-title">Wipro Technology &nbsp;|&nbsp; Associate Business Analyst – Client Insights &amp; Analytics &nbsp;|&nbsp; Jul 2021 – Mar 2022</span>
+      </div>
+      <div class="nk-content" id="nk-exp3">• Built Power BI dashboards and reporting systems aligned to client KPIs and SLAs for logistics and manufacturing clients.
+
+• Developed SQL queries, stored procedures, and automation scripts that streamlined end-to-end reporting cycles.
+
+• Managed KPI/SLA publication to internal and external stakeholders; conducted performance audits and periodical process capability studies.</div>
+      <div class="nk-footer">
+        <span class="nk-foot-note"></span>
+        <button class="copy-btn" onclick="copyCard('nk-exp3',this)">Copy</button>
+      </div>
+    </div>
+
+    <!-- Vestige -->
+    <div class="nk-card">
+      <div class="nk-card-hdr">
+        <span class="nk-card-title">Vestige Best Deals &nbsp;|&nbsp; Supply Chain &amp; Logistics Executive &nbsp;|&nbsp; Oct 2020 – Jul 2021</span>
+      </div>
+      <div class="nk-content" id="nk-exp4">• Managed PAN India forward and reverse logistics operations; led capacity planning and stock allocation to ensure product availability across the network.
+
+• Implemented Poka-Yoke process improvements to reduce operational errors; managed vendor billing, reconciliation, and logistics partner performance tracking.
+
+• Built reporting systems for warehouse and logistics performance, enabling data-driven vendor management.</div>
+      <div class="nk-footer">
+        <span class="nk-foot-note"></span>
+        <button class="copy-btn" onclick="copyCard('nk-exp4',this)">Copy</button>
+      </div>
+    </div>
+
+    <!-- Motherson -->
+    <div class="nk-card">
+      <div class="nk-card-hdr">
+        <span class="nk-card-title">Motherson Sumi Systems &nbsp;|&nbsp; Graduate Engineer Trainee &nbsp;|&nbsp; Jul 2017 – Jul 2018</span>
+      </div>
+      <div class="nk-content" id="nk-exp5">• Supported lean manufacturing operations through Kanban system management, KAIZEN, 5S, and SPC implementation.
+
+• Prepared APQP/PPAP documentation for new development parts; conducted capacity analysis and CAPEX budgeting.
+
+• Executed Time Study Analysis for efficiency improvements; developed SOPs and Work Instructions for production processes.</div>
+      <div class="nk-footer">
+        <span class="nk-foot-note"></span>
+        <button class="copy-btn" onclick="copyCard('nk-exp5',this)">Copy</button>
+      </div>
+    </div>
+
+    <!-- DESIRED ROLE TIPS -->
+    <div class="nk-section-title">Naukri Settings — Additional Tips</div>
+    <div class="nk-card">
+      <div class="nk-card-hdr"><span class="nk-card-title">Desired Job Titles (set in Naukri preferences)</span></div>
+      <div class="nk-content" id="nk-titles">Category Manager
+Marketing Strategy Manager
+Growth Manager
+Revenue Manager
+Program Manager
+Business Strategy Manager
+Product Marketing Manager
+Market Development Manager</div>
+      <div class="nk-footer">
+        <span class="nk-foot-note">Add all of these as desired roles in Naukri's "Job Preferences" section</span>
+        <button class="copy-btn" onclick="copyCard('nk-titles',this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="nk-card">
+      <div class="nk-card-hdr"><span class="nk-card-title">Target Industries (set in Naukri preferences)</span></div>
+      <div class="nk-content" id="nk-industries">Auto / Auto Ancillary
+Internet / E-Commerce
+Consumer Goods / FMCG
+Retail
+IT Services / Consulting
+BFSI (Banking, Financial Services, Insurance)
+Media &amp; Entertainment
+Telecom</div>
+      <div class="nk-footer">
+        <span class="nk-foot-note">Select these in Naukri's "Preferred Industry" preference</span>
+        <button class="copy-btn" onclick="copyCard('nk-industries',this)">Copy</button>
+      </div>
+    </div>
+
+  </div><!-- /tab-naukri -->
+</div><!-- /shell -->
+
+<script>
+function switchTab(id, btn) {
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  btn.classList.add('active');
+}
+
+function copyCard(id, btn) {
+  const el = document.getElementById(id);
+  // Strip HTML entities for clean copy
+  const text = el.innerText || el.textContent;
+  navigator.clipboard.writeText(text.trim()).then(() => {
+    btn.classList.add('ok');
+    btn.textContent = 'Copied';
+    setTimeout(() => { btn.classList.remove('ok'); btn.textContent = 'Copy'; }, 2200);
+  }).catch(() => {
+    // fallback: select text
+    const range = document.createRange();
+    range.selectNode(el);
+    window.getSelection().removeAllRanges();
+    window.getSelection().addRange(range);
+  });
+}
+
+function copySkills(btn) {
+  const skills = [...document.querySelectorAll('.nk-skill')].map(s => s.innerText).join(', ');
+  navigator.clipboard.writeText(skills).then(() => {
+    btn.classList.add('ok');
+    btn.textContent = 'Copied';
+    setTimeout(() => { btn.classList.remove('ok'); btn.textContent = 'Copy as list'; }, 2200);
+  });
+}
+</script>
